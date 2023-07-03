@@ -6,8 +6,6 @@ import os
 
 app = FastAPI()
 
-ACCEPTED_IMAGE_FORMATS = ["jpg", "jpeg", "png"]
-
 
 @app.get("/images/{folder_name}/{file_name}")
 async def get_image_from_folder(folder_name: str, file_name: str):
