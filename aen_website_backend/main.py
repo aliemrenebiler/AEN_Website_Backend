@@ -3,12 +3,12 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import os
-from common.env import set_env_vars, get_env_var
+import environment.env as env
 
-set_env_vars()
+env.set_vars()
 
 allowed_origins = [
-    get_env_var("UI_HOST"),
+    env.get_var("UI_HOST"),
 ]
 
 app = FastAPI()
@@ -27,7 +27,7 @@ ACCEPTED_IMAGE_FORMATS = ["jpg", "jpeg", "png"]
 
 @app.get("/images/{folder_name}/{file_name}")
 async def get_image_from_folder(folder_name: str, file_name: str):
-    file_path = os.path.join(get_env_var("IMAGE_FOLDER_PATH"), folder_name, file_name)
+    file_path = os.path.join(env.get_var("IMAGE_FOLDER_PATH"), folder_name, file_name)
 
     if not os.path.exists(file_path):
         raise HTTPException(
@@ -50,7 +50,7 @@ async def get_image_from_folder(folder_name: str, file_name: str):
 
 @app.get("/images/{folder_name}")
 async def get_image_names_in_folder(folder_name: str):
-    folder_path = os.path.join(get_env_var("IMAGE_FOLDER_PATH"), folder_name)
+    folder_path = os.path.join(env.get_var("IMAGE_FOLDER_PATH"), folder_name)
 
     if not os.path.exists(folder_path):
         raise HTTPException(
