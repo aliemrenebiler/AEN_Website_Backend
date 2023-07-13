@@ -1,18 +1,23 @@
-from dotenv import load_dotenv
-from os import getenv
+from typing import List
+from pydantic_settings import BaseSettings
+import os
 
 
-class Environment:
-    def set_vars(config_folder):
-        load_dotenv(f"{config_folder}/.env")
-        ENV = getenv("UI_HOST")
+def get_environment():
+    return os.environ["ENV"].lower() if "ENV" in os.environ else "development"
 
-        if ENV == "development":
-            load_dotenv(f"{config_folder}/.env.development")
-        elif ENV == "production":
-            load_dotenv(f"{config_folder}/.env.production")
-        else:
-            load_dotenv(f"{config_folder}/.env.development")
 
-    def get_var(var_name):
-        return getenv(var_name)
+def set_environment_file_path():
+    environment = get_environment()
+    return f"config/.env.{environment}"
+
+
+class Settings(BaseSettings):
+    ui_host: str
+    image_folder_path: str
+    accepted_image_formats: List[str]
+
+
+def get_environment_variables():
+    env_file_path = set_environment_file_path()
+    return Settings(_env_file=env_file_path)

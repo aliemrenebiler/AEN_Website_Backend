@@ -1,13 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from utils.environment import Environment
-from routers import images
+from utils.environment import get_environment_variables
+from routers.images import images_router
 
-Environment.set_vars("config")
+env_vars = get_environment_variables()
 
-allowed_origins = [
-    Environment.get_var("UI_HOST"),
-]
+allowed_origins = [env_vars.ui_host]
 
 app = FastAPI()
 
@@ -19,4 +17,4 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(images.router)
+app.include_router(images_router)
