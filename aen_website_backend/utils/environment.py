@@ -4,7 +4,7 @@ import os
 
 
 def get_environment():
-    return os.environ["ENV"].lower() if "ENV" in os.environ else "development"
+    return os.environ["ENV"].lower() if "ENV" in os.environ else "production"
 
 
 def set_environment_file_path():
