@@ -1,70 +1,93 @@
 <?php
 
-// Function to retrieve the image based on the provided folder name and image name
-function getImage($folderName, $imageName) {
-    // Sanitize input to avoid directory traversal
-    $folderName = preg_replace('/[^a-zA-Z0-9_\-]/', '', $folderName);
-    $imageName = preg_replace('/[^a-zA-Z0-9_\-.]/', '', $imageName);
+/*
+Run the API with:
+php -S localhost:8000 index.php
+php -S localhost:8000
+*/
 
-    // Replace this with the actual base directory where your images are stored
-    $baseDir = 'path/to/your/images/';
+function getFileExtention($fileName) {
+    $parsedFileName = explode('.', $fileName);
+    if (count($parsedFileName) > 1) {
+        return $parsedFileName[count($parsedFileName) - 1];
+    } else {
+        return '';
+    }
+}
 
-    // Check if the file exists
-    $imagePath = $baseDir . $folderName . '/' . $imageName;
-    if (file_exists($imagePath)) {
-        // Return the image file with appropriate headers
-        header('Content-Type: image/jpeg'); // Change the Content-Type as per your image type
+function getImage( $imagesFolderPath, $folderName, $imageName) {
+    $acceptedExtentions = ['jpg', 'jpeg', 'png'];
+    $imagePath = $imagesFolderPath . '/' . $folderName . '/' . $imageName;
+    $imageExtention = getFileExtention($imageName);
+
+    if (!file_exists($imagePath)) {
+        http_response_code(404);
+        echo json_encode(array('detail' => 'Not found.'));
+    } else if (!is_file($imagePath)) {
+        http_response_code(422);
+        echo json_encode(array('detail' => 'Not a file.'));
+    } else if (!in_array(strtolower($imageExtention), $acceptedExtentions)) {
+        http_response_code(422);
+        echo json_encode(array('detail' => 'Unaccepted format. Must be JPEG or PNG.'));
+    } else {
+        if (in_array(strtolower($imageExtention), ['jpg', 'jpeg'])) {
+            header('Content-Type: image/jpeg');
+        } else if (strtolower($imageExtention) === 'png') {
+            header('Content-Type: image/png');
+        }
+        http_response_code(200);
         readfile($imagePath);
-        exit;
-    } else {
-        // Image not found, return an error response
-        http_response_code(404);
-        echo json_encode(array('error' => 'Image not found'));
-        exit;
     }
 }
 
-// Function to list all image names inside a folder
-function listImagesInFolder($folderName) {
-    // Sanitize input to avoid directory traversal
-    $folderName = preg_replace('/[^a-zA-Z0-9_\-]/', '', $folderName);
+function listImagesInFolder($imagesFolderPath, $folderName) {
+    $folderPath = $imagesFolderPath . '/' . $folderName;
 
-    // Replace this with the actual base directory where your images are stored
-    $baseDir = 'path/to/your/images/';
-
-    // Check if the folder exists
-    $folderPath = $baseDir . $folderName;
-    if (is_dir($folderPath)) {
-        $images = array_diff(scandir($folderPath), array('.', '..'));
-        echo json_encode($images);
-        exit;
-    } else {
-        // Folder not found, return an error response
+    if (!file_exists($folderPath)) {
         http_response_code(404);
-        echo json_encode(array('error' => 'Folder not found'));
-        exit;
+        echo json_encode(array('detail' => 'Not found.'));
+    } else if (!is_dir($folderPath)) {
+        http_response_code(422);
+        echo json_encode(array('detail' => 'Not a folder.'));
+    } else {
+        $content = array_diff(scandir($folderPath), array('.', '..'));
+        $imageNames = array_values(array_filter($content, function($imageName) {
+            $acceptedExtentions = ['jpg', 'jpeg', 'png'];
+            $imageExtention = getFileExtention($imageName);
+            if (in_array(strtolower($imageExtention), $acceptedExtentions)){
+                return $imageName;
+            }
+        }));
+        http_response_code(200);
+        echo json_encode($imageNames);
     }
 }
 
-// Check if the request method is GET
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    // Extract the endpoint from the URL
-    $requestUri = $_SERVER['REQUEST_URI'];
-    $baseApiPath = '/api/images/';
-    $endpointPath = substr($requestUri, strpos($requestUri, $baseApiPath) + strlen($baseApiPath));
+    $imagesFolderPath = '/Users/aliemrenebiler/Documents/Coding/Web_Projects/images';
 
-    // Check if the request is for listing images or retrieving a specific image
-    if (strpos($endpointPath, '/') === false) {
-        // Endpoint for listing images in a folder: /api/images/folder_name
-        $folderName = $endpointPath;
-        listImagesInFolder($folderName);
+    $requestUri = $_SERVER['REQUEST_URI'];
+    [$route, $query] = explode('?', $requestUri);
+
+    // array_filter(): clears empty strings
+    // array_values(): reindexes the array
+    $parsedRoute = array_values(array_filter(explode('/', $route)));
+
+    if (count($parsedRoute) === 2 && $parsedRoute[0] === 'images') {
+        // Endpoint: /images/folder_name
+        $folderName = $parsedRoute[1];
+        listImagesInFolder($imagesFolderPath, $folderName);
+    } else if (count($parsedRoute) === 3 && $parsedRoute[0] === 'images'){
+        // Endpoint: /images/folder_name/image_name
+        $folderName = $parsedRoute[1];
+        $imageName = $parsedRoute[2];
+        getImage($imagesFolderPath, $folderName, $imageName);
     } else {
-        // Endpoint for retrieving a specific image: /api/images/folder_name/image_name.jpg
-        list($folderName, $imageName) = explode('/', $endpointPath, 2);
-        getImage($folderName, $imageName);
+        // Not existing endpoints
+        http_response_code(404);
+        echo json_encode(array('detail' => 'Not Found'));
     }
 } else {
     http_response_code(405);
-    echo json_encode(array('error' => 'Method not allowed'));
-    exit;
+    echo json_encode(array('detail' => 'Method Not Allowed'));
 }
