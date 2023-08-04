@@ -7,13 +7,18 @@ php -S localhost:8000
 */
 
 $DEV_ENV_VARS = [
-    "UI_HOST" => "http://localhost:3000",
+    "ACCESS-CONTROL-ALLOW-ORIGIN" => ["http://localhost:3000"],
     "IMAGES_FOLDER_PATH" => "/Users/aliemrenebiler/Documents/Coding/Web_Projects/images",
     "ACCEPTED_IMAGE_FORMATS" => ["jpg","jpeg","png"],
 ];
 
 $PROD_ENV_VARS = [
-    "UI_HOST" => "https://www.aliemrenebiler.com",
+    "UI_HOST" => [
+        "http://aliemrenebiler.com",
+        "http://www.aliemrenebiler.com",
+        "https://aliemrenebiler.com",
+        "https://www.aliemrenebiler.com",
+    ],
     "IMAGES_FOLDER_PATH" => "/home/aliemren/images",
     "ACCEPTED_IMAGE_FORMATS" => ["jpg","jpeg","png"],
 ];
@@ -78,7 +83,7 @@ function listImagesInFolder($folderName) {
 // ----- Main Code -----
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    header("Access-Control-Allow-Origin: " . $ENV_VARS['UI_HOST']);
+    header("Access-Control-Allow-Origin: " . $ENV_VARS['ACCESS-CONTROL-ALLOW-ORIGIN']);
 
     $requestUri = $_SERVER['REQUEST_URI'];
     $parsedRequestUri = explode('?', $requestUri);
@@ -91,6 +96,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     // array_filter(): clears empty strings
     // array_values(): reindexes the array
     $parsedRoute = array_values(array_filter(explode('/', $route)));
+    $imageRouteIndex = array_search('images', $parsedRoute, true);
+    $parsedRoute = array_slice($parsedRoute, $imageRouteIndex);
 
     if (count($parsedRoute) === 2 && $parsedRoute[0] === 'images') {
         // Endpoint: /images/folder_name
