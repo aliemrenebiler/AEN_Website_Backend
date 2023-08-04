@@ -67,8 +67,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $imagesFolderPath = '/Users/aliemrenebiler/Documents/Coding/Web_Projects/images';
 
     $requestUri = $_SERVER['REQUEST_URI'];
-    [$route, $query] = explode('?', $requestUri);
-
+    $parsedRequestUri = explode('?', $requestUri);
+    
+    $route = $parsedRequestUri[0];
+    if (count($parsedRequestUri) > 1) {
+        $query = $parsedRequestUri[1];
+    }
+    
     // array_filter(): clears empty strings
     // array_values(): reindexes the array
     $parsedRoute = array_values(array_filter(explode('/', $route)));
