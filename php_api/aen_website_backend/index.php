@@ -23,7 +23,7 @@ $PROD_ENV_VARS = [
     "ACCEPTED_IMAGE_FORMATS" => ["jpg","jpeg","png"],
 ];
 
-$ENV_VARS = $DEV_ENV_VARS;
+$ENV_VARS = $PROD_ENV_VARS;
 
 function getFileExtention($fileName) {
     $parsedFileName = explode('.', $fileName);
