@@ -13,7 +13,7 @@ $DEV_ENV_VARS = [
 
 $PROD_ENV_VARS = [
     "ACCESS-CONTROL-ALLOW-ORIGIN" => "https://www.aliemrenebiler.com",
-    "IMAGES_FOLDER_PATH" => "/home/aliemren/images",
+    "IMAGES_FOLDER_PATH" => "/home/aliemren/public_html/images",
     "ACCEPTED_IMAGE_FORMATS" => ["jpg","jpeg","png"],
 ];
 
