@@ -3,27 +3,21 @@
 /*
 Run the API with:
 php -S localhost:8000 index.php
-php -S localhost:8000
 */
 
 $DEV_ENV_VARS = [
-    "ACCESS-CONTROL-ALLOW-ORIGIN" => ["http://localhost:3000"],
+    "ACCESS-CONTROL-ALLOW-ORIGIN" => "*",
     "IMAGES_FOLDER_PATH" => "/Users/aliemrenebiler/Documents/Coding/Web_Projects/images",
     "ACCEPTED_IMAGE_FORMATS" => ["jpg","jpeg","png"],
 ];
 
 $PROD_ENV_VARS = [
-    "UI_HOST" => [
-        "http://aliemrenebiler.com",
-        "http://www.aliemrenebiler.com",
-        "https://aliemrenebiler.com",
-        "https://www.aliemrenebiler.com",
-    ],
+    "ACCESS-CONTROL-ALLOW-ORIGIN" => "https://www.aliemrenebiler.com",
     "IMAGES_FOLDER_PATH" => "/home/aliemren/images",
     "ACCEPTED_IMAGE_FORMATS" => ["jpg","jpeg","png"],
 ];
 
-$ENV_VARS = $PROD_ENV_VARS;
+$ENV_VARS = $DEV_ENV_VARS;
 
 function getFileExtention($fileName) {
     $parsedFileName = explode('.', $fileName);
@@ -83,7 +77,7 @@ function listImagesInFolder($folderName) {
 // ----- Main Code -----
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    header("Access-Control-Allow-Origin: " . $ENV_VARS['ACCESS-CONTROL-ALLOW-ORIGIN']);
+    header("Access-Control-Allow-Origin: " . $GLOBALS['ENV_VARS']['ACCESS-CONTROL-ALLOW-ORIGIN']);
 
     $requestUri = $_SERVER['REQUEST_URI'];
     $parsedRequestUri = explode('?', $requestUri);
